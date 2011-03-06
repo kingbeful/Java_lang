@@ -4,8 +4,8 @@
 #include <string.h>
 //#include "occ_lang_parse.h"
 //#define YY_NO_UNPUT
-//struct occ_keyword { const char*name; int tokenType; };
-//extern struct occ_keyword *OccGetKeywordToken (const char *str, unsigned int len);
+struct java_keyword { const char * name; int tokenType; };
+extern struct java_keyword *JavaLangGetKeywordToken (const char * str, unsigned int len);
 unsigned int lineno = 1;
 %}
 
@@ -41,7 +41,6 @@ name  [[:alpha:]_][[:alnum:]_$]*
                 #ifdef HAVE_YACC
                 //yylval.text = strdup(yytext);
                 //yylval.text[strlen(yytext)-1] = 0;
-                BEGIN(INITIAL);
                 return STRING;
                 #endif
                }
@@ -60,6 +59,7 @@ name  [[:alpha:]_][[:alnum:]_$]*
     fprintf (stdout,"%s",yytext);
     #endif
 }
+
 
     /* Ident */
 {name} {

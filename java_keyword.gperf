@@ -1,0 +1,51 @@
+%{
+/* Command-line:
+gperf -o  -k 1-3,$ -L C -H keyword_hash -N JavaLangGetKeywordToken -t java_keyword.gperf > java_keyword.c
+*/
+
+#include <string.h>
+#include <stdio.h>
+
+#include "java_lang_parse.h"
+%}
+struct java_keyword { const char * name; int tokenType; };
+%%
+"public",          K_PUBLIC
+"private",         K_PRIVATE
+"int",             K_INT
+"class",           K_CLASS
+"String",          K_STRING
+"static",          K_STATIC
+"ArrayList",       K_ARRAYLIST
+"new",             K_NEW
+"void",            K_VOID
+"return",          K_RETURN
+%%
+/*
+// Below is used for test your code before integrated your gperf file
+// into the project. Un-comment the below lines, and use the command:
+//
+// $ gperf -o  -k 1-3,$ -L C -H keyword_hash -N JavaLangGetKeywordToken -t java_keyword.gperf > java_keyword.c
+// $ gcc -o javagperf java_keyword.c
+// $ ./javagperf
+
+int main (void)
+{
+    char c[100];
+    puts("input a keyword :\n");
+    gets(c);
+    while (strlen(c) > 1) {
+        puts(c);
+        const struct java_keyword *key_token = JavaLangGetKeywordToken(c, strlen(c));
+        if (key_token == 0) {
+	       printf("UnKnow!\n");
+        }
+        else {
+           printf("Type %s is: %d\n", (key_token->name),key_token->tokenType);;
+        }
+        gets(c);
+    }
+}
+*/
+
+

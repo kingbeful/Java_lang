@@ -25,5 +25,8 @@ lex: lex.javayy.o
 lex.javayy.c : java_lang.l
 	$(LEX) -Cf --verbose -Pjavayy java_lang.l
 
+java_lang_parse.c java_lang_parse.h : java_lang.y
+	$(YACC) --verbose -t -d -p javayy -o java_lang_parse.c java_lang.y
+
 clean:
 	rm -f *.out *.o lex.javayy.c $(BIN_LEX)
