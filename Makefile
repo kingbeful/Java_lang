@@ -15,8 +15,8 @@ help:
 	@echo "This Makefile is used to compile the parser for Java."
 	@echo "Please use one of the following:"
 	@echo "-----------------------------------------------------"
-	@echo "make lex ...... to build main.hex"
-	@echo "make parser ... to flash fuses and firmware"
+	@echo "make lex ...... to only build lex"
+	@echo "make parser ... to build the parser"
 	@echo "make clean .... to remove all the file during compile"
 
 lex: lex.javayy.o
