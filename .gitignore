@@ -1,0 +1,9 @@
+*.java
+*.swp
+*.o
+*.out
+*.c
+*.h
+*.output
+jack
+javagperf

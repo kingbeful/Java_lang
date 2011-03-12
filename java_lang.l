@@ -1,12 +1,15 @@
+%option stack
+%option yylineno
+%option nounput
 %{
 #include <stdio.h>
 #include <stdlib.h>
 #include <string.h>
-//#include "occ_lang_parse.h"
-//#define YY_NO_UNPUT
+#include "java_lang_parse.h"
+#define YY_NO_UNPUT
 struct java_keyword { const char * name; int tokenType; };
+const struct java_keyword *key_token;
 extern struct java_keyword *JavaLangGetKeywordToken (const char * str, unsigned int len);
-unsigned int lineno = 1;
 %}
 
 digital       [[:digit:]]
@@ -17,18 +20,19 @@ name  [[:alpha:]_][[:alnum:]_$]*
 %x CCOMMENT
 %x LCOMMENT
 %x CSTRING
+%x CBODY
 
 %%
     /* The Line comments */
-"//".*         { BEGIN(LCOMMENT); }
-<LCOMMENT>.    { yymore(); }
-<LCOMMENT>\n   { ++lineno; BEGIN(INITIAL); }
+"//"           { yy_push_state(LCOMMENT); }
+<LCOMMENT>.*   { yymore(); }
+<LCOMMENT>\n   { yy_pop_state (); }
 
     /* The Content comments */
-"/*"           { BEGIN(CCOMMENT); }
+"/*"           { yy_push_state(CCOMMENT); }
 <CCOMMENT>.    { yymore(); }
-<CCOMMENT>\n   { ++lineno; yymore(); }
-<CCOMMENT>"*/" { BEGIN(INITIAL); }
+<CCOMMENT>\n   { yymore(); }
+<CCOMMENT>"*/" { yy_pop_state (); }
 
     /* String */
 \"           { BEGIN(CSTRING); }
@@ -39,16 +43,24 @@ name  [[:alpha:]_][[:alnum:]_$]*
                 fprintf (stdout,"%s",yytext);
                 #endif 
                 #ifdef HAVE_YACC
-                //yylval.text = strdup(yytext);
-                //yylval.text[strlen(yytext)-1] = 0;
+                javayylval.pval = strdup(yytext);
+                javayylval.pval[strlen(yytext)-1] = 0;
                 return STRING;
                 #endif
                }
-<CSTRING>.      { yymore(); }
+<CSTRING>[^\"] { yymore(); }
+
+    /* Program Body */
+\{           { yy_push_state(CBODY);}
+<CBODY>\}    { yy_pop_state (); }
+<CBODY>\{    { yy_push_state(CBODY); }
+<CBODY>\n    { yymore(); }
+<CBODY>"/*"  { yy_push_state(CCOMMENT); }
+<CBODY>"//"  { yy_push_state(LCOMMENT); }
+<CBODY>[^\}\{]+  { yymore(); }
 
     /* Eat up the new line */
 \n {
-    ++lineno;
     #ifdef DEBUG
     fprintf (stdout,"%s",yytext);
     #endif
@@ -67,8 +79,17 @@ name  [[:alpha:]_][[:alnum:]_$]*
     fprintf (stdout,"(ID: %s)",yytext);
     #endif
     #ifdef HAVE_YACC
-    occyylval.pval = strdup(yytext);
-    return NAME_ID ;
+    key_token = JavaLangGetKeywordToken(yytext, strlen(yytext));
+    if (key_token == 0) {
+       javayylval.pval = strdup(yytext);
+       return NAME_ID ;
+    }
+    else {
+       #ifdef DEBUG
+       fprintf (stdout,"KeyWD");
+       #endif
+       return key_token->tokenType;
+    }
     #endif
 }
 
@@ -78,12 +99,12 @@ name  [[:alpha:]_][[:alnum:]_$]*
     fprintf (stdout,"(Num: %s)",yytext);
     #endif
     #ifdef HAVE_YACC
-    occyylval.ival = atoi(yytext);
-    return DEC_NUMBER;
+    javayylval.ival = atoi(yytext);
+    return NUMBER;
     #endif
 }
     /* Misc */
-[=;\{\}./\[\]\(\),] {
+[\<\>\[\]\(\),] {
     #ifdef DEBUG
     fprintf (stdout,"(Misc: %s)",yytext);
     #endif
@@ -93,7 +114,7 @@ name  [[:alpha:]_][[:alnum:]_$]*
 }
 
 . {
-    fprintf (stderr,"L:%d:Syntax error near \'%s\'\n",lineno, yytext);
+    fprintf (stderr,"L:%d:Syntax error near \'%s\'\n",yylineno, yytext);
     exit (-1);
 }
 

@@ -12,11 +12,11 @@ struct java_keyword { const char * name; int tokenType; };
 %%
 "public",          K_PUBLIC
 "private",         K_PRIVATE
+"protected",       K_PROTECTED
 "int",             K_INT
 "class",           K_CLASS
 "String",          K_STRING
 "static",          K_STATIC
-"ArrayList",       K_ARRAYLIST
 "new",             K_NEW
 "void",            K_VOID
 "return",          K_RETURN
@@ -41,7 +41,7 @@ int main (void)
 	       printf("UnKnow!\n");
         }
         else {
-           printf("Type %s is: %d\n", (key_token->name),key_token->tokenType);;
+           printf("Type %s is: %d\n", (key_token->name),key_token->tokenType);
         }
         gets(c);
     }
